@@ -438,11 +438,19 @@ export default function App() {
           </div>
           <div>
             <h1 className="text-sm font-display font-bold text-white tracking-tight flex items-center gap-1.5">
-              Organizador MB-102
+              RuneBoard
               <span className="text-[9px] bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-mono px-1.5 py-0.5 rounded-full font-bold">
                 PRO v1.5
               </span>
             </h1>
+            <a 
+              href="http://www.runeprojects.com.br/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold block leading-none hover:underline mt-0.5"
+            >
+              by Rune Projects
+            </a>
           </div>
         </div>
 

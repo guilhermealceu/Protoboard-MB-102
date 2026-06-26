@@ -12,3 +12,30 @@
     backdrop-filter: blur(2px);
   }
 }
+
+/* Global scrollbar styling for a polished dark theme experience */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #020617; /* Matches bg-slate-950 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b; /* Matches bg-slate-800 */
+  border-radius: 9999px;
+  border: 2px solid #020617;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155; /* Matches bg-slate-700 */
+}
+
+/* Firefox scrollbar compatibility */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #1e293b #020617;
+}
+
