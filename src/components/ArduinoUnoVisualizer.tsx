@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Device } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { Cpu, Link, Unlink, Plus } from 'lucide-react';
@@ -33,6 +33,40 @@ export const ArduinoUnoVisualizer: React.FC<ArduinoUnoVisualizerProps> = ({
   );
 
   const [activeColorPickerPinId, setActiveColorPickerPinId] = useState<string | null>(null);
+
+  const [zoom, setZoom] = useState(1.0);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+
+  const resetView = () => {
+    setZoom(1.0);
+    setPanX(0);
+    setPanY(0);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button === 0) {
+      const target = e.target as HTMLElement;
+      if (target.closest('[data-interactive="true"]') || target.closest('button')) {
+        return;
+      }
+      setIsDragging(true);
+      dragStart.current = { x: e.clientX - panX, y: e.clientY - panY };
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging) {
+      setPanX(e.clientX - dragStart.current.x);
+      setPanY(e.clientY - dragStart.current.y);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
 
   const handleQuickAddArduino = () => {
     // Exact structure matching POPULAR_TEMPLATES.arduino_uno
@@ -243,8 +277,48 @@ export const ArduinoUnoVisualizer: React.FC<ArduinoUnoVisualizerProps> = ({
         )}
       </AnimatePresence>
 
+      {/* Zoom / Pan Controls Bar */}
+      <div className="flex items-center justify-between px-4 py-2 bg-slate-900/80 rounded-t-2xl border border-b-0 border-slate-800/60 backdrop-blur-md">
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+          <span className="text-xs font-semibold text-slate-300">Esquema Interativo Arduino Uno R3</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setZoom(Math.max(0.5, zoom - 0.15))}
+            className="p-1 px-2.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono transition-colors cursor-pointer"
+            title="Afastar"
+          >
+            -
+          </button>
+          <span className="text-xs font-mono text-slate-400 w-12 text-center select-none">
+            {Math.round(zoom * 100)}%
+          </span>
+          <button
+            onClick={() => setZoom(Math.min(2.5, zoom + 0.15))}
+            className="p-1 px-2.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono transition-colors cursor-pointer"
+            title="Aproximar"
+          >
+            +
+          </button>
+          <button
+            onClick={resetView}
+            className="p-1 px-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 text-xs transition-colors cursor-pointer"
+            title="Resetar Zoom"
+          >
+            Resetar
+          </button>
+        </div>
+      </div>
+
       {/* Interactive Board Board Container */}
-      <div className="w-full bg-slate-950/60 border border-slate-800 rounded-2xl p-4 overflow-x-auto custom-scrollbar flex flex-col items-center justify-center">
+      <div 
+        className={`w-full bg-slate-950/60 border border-slate-800 rounded-b-2xl p-4 overflow-hidden relative flex flex-col items-center justify-center cursor-${isDragging ? 'grabbing' : 'grab'}`}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
         
         {/* Real-time interactive board schematic SVG matching the photo */}
         <svg
@@ -278,6 +352,9 @@ export const ArduinoUnoVisualizer: React.FC<ArduinoUnoVisualizerProps> = ({
               <stop offset="100%" stopColor="#0f172a" />
             </linearGradient>
           </defs>
+
+          {/* ZOOM AND PAN WRAPPER GROUP */}
+          <g transform={`translate(${panX}, ${panY}) scale(${zoom})`} className="transition-transform duration-75" style={{ transformOrigin: 'center' }}>
 
           {/* MAIN BOARD GROUP WITH SHADOW */}
           <g filter="url(#shadow)">
@@ -629,6 +706,7 @@ export const ArduinoUnoVisualizer: React.FC<ArduinoUnoVisualizerProps> = ({
               <g 
                 key={`${pin.name}-${pin.x}-${pin.y}`}
                 className="group/pin cursor-pointer"
+                data-interactive="true"
                 onClick={() => handlePinClick(pin.name, pin.pinId)}
               >
                 {/* Header socket black square hole */}
@@ -715,6 +793,7 @@ export const ArduinoUnoVisualizer: React.FC<ArduinoUnoVisualizerProps> = ({
               </g>
             );
           })}
+          </g>
         </svg>
 
         {/* Legend block for the interactive Arduino */}

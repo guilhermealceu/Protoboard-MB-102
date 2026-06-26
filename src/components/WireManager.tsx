@@ -114,7 +114,7 @@ export const WireManager: React.FC<WireManagerProps> = ({
       )}
 
       {/* List of Wires */}
-      <div className="flex flex-col gap-2 max-h-[360px] overflow-y-auto pr-1">
+      <div className="flex flex-col gap-2 max-h-[360px] lg:max-h-none overflow-y-auto lg:overflow-visible pr-1">
         {wires.length === 0 ? (
           <div className="p-4 bg-slate-950/30 border border-slate-900 border-dashed rounded-lg text-center text-slate-500 text-xs italic">
             Nenhum cabo puxado.

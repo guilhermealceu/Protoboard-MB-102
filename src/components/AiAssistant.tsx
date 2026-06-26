@@ -214,7 +214,7 @@ export const AiAssistant: React.FC<AiAssistantProps> = ({
 
           {/* AI Output Result */}
           {suggestionData && (
-            <div className="flex flex-col gap-3 flex-1 max-h-[380px] overflow-y-auto pr-1">
+            <div className="flex flex-col gap-3 flex-1 max-h-[380px] lg:max-h-none overflow-y-auto lg:overflow-visible pr-1">
               <div className="p-3 bg-slate-950 rounded-lg border border-indigo-900/40">
                 <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider block mb-1">Visão Geral do Plano</span>
                 <p className="text-[11px] text-slate-300 leading-relaxed italic">
@@ -271,9 +271,9 @@ export const AiAssistant: React.FC<AiAssistantProps> = ({
 
       {/* Tab Contents: Assistant Chatbot */}
       {activeTab === 'chat' && (
-        <div className="flex flex-col gap-3 flex-1 h-[420px]">
+        <div className="flex flex-col gap-3 flex-1 h-[420px] lg:h-[calc(100vh-220px)]">
           {/* Scrollable Messages window */}
-          <div className="flex-1 bg-slate-950/80 rounded-lg border border-slate-800 p-3 overflow-y-auto flex flex-col gap-3 max-h-[350px]">
+          <div className="flex-1 bg-slate-950/80 rounded-lg border border-slate-800 p-3 overflow-y-auto flex flex-col gap-3 max-h-[350px] lg:max-h-none">
             {chatMessages.map((msg, index) => (
               <div
                 key={index}

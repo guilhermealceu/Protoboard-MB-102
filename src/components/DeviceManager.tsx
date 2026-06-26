@@ -228,7 +228,7 @@ export const DeviceManager: React.FC<DeviceManagerProps> = ({
       )}
 
       {/* List of Registered Devices */}
-      <div className="flex flex-col gap-3.5 max-h-[480px] overflow-y-auto pr-1">
+      <div className="flex flex-col gap-3.5 max-h-[480px] lg:max-h-none overflow-y-auto lg:overflow-visible pr-1">
         {devices.map((device) => (
           <div
             key={device.id}

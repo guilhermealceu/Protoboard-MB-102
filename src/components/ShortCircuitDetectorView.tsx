@@ -89,7 +89,7 @@ export const ShortCircuitDetectorView: React.FC<ShortCircuitDetectorViewProps> =
             Nenhuma ligação elétrica ativa. Puxe um cabo ou mapeie um pino para ver conexões aqui.
           </div>
         ) : (
-          <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
+          <div className="flex flex-col gap-2 max-h-[300px] lg:max-h-none overflow-y-auto lg:overflow-visible pr-1">
             {activeComponents.map((comp) => {
               const isSelected = selectedComponentId === comp.id;
               

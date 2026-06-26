@@ -853,7 +853,7 @@ export default function App() {
               animate={{ width: 440, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 180 }}
-              className="w-full lg:w-[440px] bg-slate-950 border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col shrink-0 overflow-y-auto print:hidden z-10 shadow-2xl relative"
+              className="w-full lg:w-[440px] bg-slate-950 border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col shrink-0 overflow-hidden print:hidden z-10 shadow-2xl relative"
             >
               {/* Sidebar Tab Selectors */}
               <div className="flex bg-slate-950 border-b border-slate-800/80 p-1 font-semibold text-xs shrink-0 z-10 sticky top-0 backdrop-blur-md">
@@ -885,7 +885,7 @@ export default function App() {
               </div>
 
               {/* Panel Container (with fade animations per tab) */}
-              <div className="p-4 flex-1">
+              <div className="p-4 flex-1 overflow-y-auto custom-scrollbar">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={sidebarTab}
