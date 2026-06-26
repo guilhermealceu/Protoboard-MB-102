@@ -1,0 +1,6 @@
+{
+  "name": "Organizador de Protoboard MB-102",
+  "description": "Uma ferramenta interativa para organizar conexões, cabos e dispositivos em uma placa de ensaio (protoboard) MB-102 de 830 pontos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
