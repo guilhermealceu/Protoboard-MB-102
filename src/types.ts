@@ -20,6 +20,7 @@ export interface DevicePin {
   name: string;
   type?: 'power_vcc' | 'power_gnd' | 'digital' | 'analog' | 'other';
   holeId: string | null; // null if not connected
+  color?: string; // custom wire color
 }
 
 export interface Device {

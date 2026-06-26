@@ -8,6 +8,7 @@ import { WireManager, WIRE_COLORS } from './components/WireManager';
 import { ShortCircuitDetectorView } from './components/ShortCircuitDetectorView';
 import { ProjectActions } from './components/ProjectActions';
 import { AiAssistant } from './components/AiAssistant';
+import { ArduinoUnoVisualizer } from './components/ArduinoUnoVisualizer';
 import { 
   Cpu, 
   Wrench, 
@@ -150,7 +151,7 @@ export default function App() {
     return currentProject.devices.flatMap(dev => 
       dev.pins.filter(p => p.holeId !== null).map(p => ({
         deviceName: dev.name,
-        deviceColor: dev.color,
+        deviceColor: p.color || dev.color,
         pinName: p.name,
         holeId: p.holeId!
       }))
@@ -366,7 +367,32 @@ export default function App() {
       if (dev.id !== deviceId) return dev;
       return {
         ...dev,
-        pins: dev.pins.map((p) => (p.id === pinId ? { ...p, holeId } : p)),
+        pins: dev.pins.map((p) => {
+          if (p.id === pinId) {
+            // Assign the active wire color if the pin is being connected and has no custom color yet
+            const updatedColor = holeId ? (p.color || activeWireColor) : p.color;
+            return { ...p, holeId, color: updatedColor };
+          }
+          return p;
+        }),
+      };
+    });
+
+    const updatedProject = {
+      ...currentProject,
+      devices: updatedDevices,
+      updatedAt: new Date().toISOString(),
+    };
+    const updatedAll = allProjects.map((p) => (p.id === currentProjectId ? updatedProject : p));
+    saveAllToStorage(updatedAll);
+  };
+
+  const onUpdatePinColor = (deviceId: string, pinId: string, color: string) => {
+    const updatedDevices = currentProject.devices.map((dev) => {
+      if (dev.id !== deviceId) return dev;
+      return {
+        ...dev,
+        pins: dev.pins.map((p) => (p.id === pinId ? { ...p, color } : p)),
       };
     });
 
@@ -676,6 +702,20 @@ export default function App() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Collapsible / Interactive Arduino Uno R3 Visualizer section */}
+          <div className="mt-6 z-10 print:hidden">
+            <ArduinoUnoVisualizer
+              devices={currentProject.devices}
+              onAddDevice={onAddDevice}
+              onRemoveDevice={onRemoveDevice}
+              onMapPin={onMapPin}
+              selectedPin={selectedPin}
+              setSelectedPin={setSelectedPin}
+              selectedHoleId={selectedHoleId}
+              onUpdatePinColor={onUpdatePinColor}
+            />
+          </div>
 
           {/* Real-time Telemetry Dashboard below the Breadboard Card */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 print:hidden z-10">

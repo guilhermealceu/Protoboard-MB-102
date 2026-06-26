@@ -146,7 +146,7 @@ export const BreadboardSVG: React.FC<BreadboardSVGProps> = ({
         if (pin.holeId === holeId) {
           return {
             deviceName: dev.name,
-            deviceColor: dev.color,
+            deviceColor: pin.color || dev.color,
             pinName: pin.name,
             pinType: pin.type,
           };
