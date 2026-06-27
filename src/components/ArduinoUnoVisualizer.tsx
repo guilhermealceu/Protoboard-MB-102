@@ -68,6 +68,28 @@ export const ArduinoUnoVisualizer: React.FC<ArduinoUnoVisualizerProps> = ({
     setIsDragging(false);
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('[data-interactive="true"]') || target.closest('button')) {
+      return;
+    }
+    setIsDragging(true);
+    const touch = e.touches[0];
+    dragStart.current = { x: touch.clientX - panX, y: touch.clientY - panY };
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (isDragging) {
+      const touch = e.touches[0];
+      setPanX(touch.clientX - dragStart.current.x);
+      setPanY(touch.clientY - dragStart.current.y);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
   const handleQuickAddArduino = () => {
     // Exact structure matching POPULAR_TEMPLATES.arduino_uno
     const newArduino: Device = {
@@ -318,6 +340,9 @@ export const ArduinoUnoVisualizer: React.FC<ArduinoUnoVisualizerProps> = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         
         {/* Real-time interactive board schematic SVG matching the photo */}

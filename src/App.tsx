@@ -9,6 +9,7 @@ import { ShortCircuitDetectorView } from './components/ShortCircuitDetectorView'
 import { ProjectActions } from './components/ProjectActions';
 import { AiAssistant } from './components/AiAssistant';
 import { ArduinoUnoVisualizer } from './components/ArduinoUnoVisualizer';
+import { MobileCompactView } from './components/MobileCompactView';
 import { 
   Cpu, 
   Wrench, 
@@ -94,6 +95,20 @@ export default function App() {
   const [highlightedComponentId, setHighlightedComponentId] = useState<string | null>(null);
   const [sidebarTab, setSidebarTab] = useState<'devices' | 'wires' | 'ai' | 'health'>('devices');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+
+  // Responsive / Mobile-friendly States
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [mobileViewType, setMobileViewType] = useState<'grafico' | 'simplificado'>('grafico');
+
+  // Detect mobile screen width on mount and resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // States for Hole Modal Editing
   const [editWireLabel, setEditWireLabel] = useState<string>('');
@@ -505,10 +520,10 @@ export default function App() {
       </header>
 
       {/* 2. MAIN SPLIT SECTION (GRID CAD LAYOUT) */}
-      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden print:p-0 relative">
+      <main className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden print:p-0 relative">
         
         {/* LEFT/CENTER WORKSPACE: THE BREADBOARD VISUAL STAGE (NOW CENTRALIZED) */}
-        <div className="flex-1 flex flex-col overflow-y-auto bg-slate-900 bg-[radial-gradient(#1e293b_1.2px,transparent_1.2px)] [background-size:20px_20px] p-4 lg:p-6 print:p-0 relative">
+        <div className="flex-1 flex flex-col lg:overflow-y-auto overflow-visible bg-slate-900 bg-[radial-gradient(#1e293b_1.2px,transparent_1.2px)] [background-size:20px_20px] p-4 lg:p-6 print:p-0 relative">
           
           {/* Header Dashboard Summary cards (Floating on top of board) */}
           <div className="flex flex-col sm:flex-row gap-3 mb-4 print:hidden z-10">
@@ -625,97 +640,132 @@ export default function App() {
             )}
           </AnimatePresence>
 
-          {/* Interactive Protoboard SVG Stage in Center (Now with scale entry animation) */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4 }}
-            className="flex-1 min-h-[380px] max-h-[460px] print:max-h-none print:min-h-0 relative z-0 flex items-center justify-center"
-          >
-            <div className="w-full h-full relative group">
-              <BreadboardSVG
+          {/* VIEW SWITCH FOR MOBILE ONLY */}
+          {isMobile && (
+            <div className="flex bg-slate-950/80 p-1 rounded-xl border border-slate-800 gap-1.5 mb-4 z-10 shrink-0">
+              <button
+                type="button"
+                onClick={() => setMobileViewType('grafico')}
+                className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${mobileViewType === 'grafico' ? 'bg-indigo-600 text-white shadow-md font-bold' : 'text-slate-400 hover:text-slate-200'}`}
+              >
+                Esquema Gráfico (Zoom)
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobileViewType('simplificado')}
+                className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${mobileViewType === 'simplificado' ? 'bg-indigo-600 text-white shadow-md font-bold' : 'text-slate-400 hover:text-slate-200'}`}
+              >
+                Lista Simplificada (Caixinhas 📱)
+              </button>
+            </div>
+          )}
+
+          {isMobile && mobileViewType === 'simplificado' ? (
+            <div className="z-10 mb-6 shrink-0">
+              <MobileCompactView
                 wires={currentProject.wires}
                 devices={currentProject.devices}
-                onHoleClick={handleHoleClick}
-                selectedHoleId={selectedHoleId}
-                hoveredHoleId={hoveredHoleId}
-                setHoveredHoleId={setHoveredHoleId}
-                onWireClick={(wire) => {
-                  setSelectedWireId(wire.id);
-                  setSelectedHoleId(null);
-                }}
-                selectedWireId={selectedWireId}
-                highlightedComponentId={highlightedComponentId}
-                holeToComponentMap={diagnostics.holeToComponentMap}
+                onAddWire={onAddWire}
+                onRemoveWire={onRemoveWire}
+                onMapPin={onMapPin}
+                onUpdatePinColor={onUpdatePinColor}
               />
             </div>
-          </motion.div>
-
-          {/* Active Cable Jumper Details Inspector (Floating below board) */}
-          <AnimatePresence>
-            {selectedWireId && (
+          ) : (
+            <>
+              {/* Interactive Protoboard SVG Stage in Center (Now with scale entry animation) */}
               <motion.div 
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 15 }}
-                className="p-4 bg-slate-950/90 backdrop-blur-md border border-sky-900/40 rounded-xl shadow-lg mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 print:hidden z-10"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4 }}
+                className="flex-1 min-h-[380px] max-h-[460px] print:max-h-none print:min-h-0 relative z-0 flex items-center justify-center"
               >
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-sky-950 border border-sky-800/30 flex items-center justify-center shrink-0">
-                    <Cable className="w-5.5 h-5.5 text-sky-400" />
-                  </div>
-                  <div className="text-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="w-3.5 h-3.5 rounded-full border border-slate-700 shrink-0" style={{ backgroundColor: currentProject.wires.find(w => w.id === selectedWireId)?.color }}></span>
-                      <h4 className="font-bold text-slate-200">Cabo Dupont Selecionado: {currentProject.wires.find(w => w.id === selectedWireId)?.sourceId.toUpperCase()} &rarr; {currentProject.wires.find(w => w.id === selectedWireId)?.destId.toUpperCase()}</h4>
-                    </div>
-                    {currentProject.wires.find(w => w.id === selectedWireId)?.label && (
-                      <p className="text-sky-400 font-semibold mt-1 font-mono text-[11px] bg-sky-950/40 border border-sky-900/30 px-1.5 py-0.5 rounded w-fit">
-                        Etiqueta: {currentProject.wires.find(w => w.id === selectedWireId)?.label}
-                      </p>
-                    )}
-                    {currentProject.wires.find(w => w.id === selectedWireId)?.notes && (
-                      <p className="text-slate-400 italic mt-1 pl-1 leading-normal">
-                        &ldquo;{currentProject.wires.find(w => w.id === selectedWireId)?.notes}&rdquo;
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => {
-                      // Trigger modal of source hole to edit details
-                      const w = currentProject.wires.find(w => w.id === selectedWireId);
-                      if (w) setSelectedHoleId(w.sourceId);
+                <div className="w-full h-full relative group">
+                  <BreadboardSVG
+                    wires={currentProject.wires}
+                    devices={currentProject.devices}
+                    onHoleClick={handleHoleClick}
+                    selectedHoleId={selectedHoleId}
+                    hoveredHoleId={hoveredHoleId}
+                    setHoveredHoleId={setHoveredHoleId}
+                    onWireClick={(wire) => {
+                      setSelectedWireId(wire.id);
+                      setSelectedHoleId(null);
                     }}
-                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs font-semibold rounded-lg cursor-pointer transition-colors"
-                  >
-                    Editar Informações
-                  </button>
-                  <button
-                    onClick={() => onRemoveWire(selectedWireId)}
-                    className="px-3 py-1.5 bg-red-950 hover:bg-red-900/80 text-red-400 text-xs font-semibold rounded-lg cursor-pointer transition-colors"
-                  >
-                    Apagar Cabo
-                  </button>
+                    selectedWireId={selectedWireId}
+                    highlightedComponentId={highlightedComponentId}
+                    holeToComponentMap={diagnostics.holeToComponentMap}
+                  />
                 </div>
               </motion.div>
-            )}
-          </AnimatePresence>
 
-          {/* Collapsible / Interactive Arduino Uno R3 Visualizer section */}
-          <div className="mt-6 z-10 print:hidden">
-            <ArduinoUnoVisualizer
-              devices={currentProject.devices}
-              onAddDevice={onAddDevice}
-              onRemoveDevice={onRemoveDevice}
-              onMapPin={onMapPin}
-              selectedPin={selectedPin}
-              setSelectedPin={setSelectedPin}
-              selectedHoleId={selectedHoleId}
-              onUpdatePinColor={onUpdatePinColor}
-            />
-          </div>
+              {/* Active Cable Jumper Details Inspector (Floating below board) */}
+              <AnimatePresence>
+                {selectedWireId && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 15 }}
+                    className="p-4 bg-slate-950/90 backdrop-blur-md border border-sky-900/40 rounded-xl shadow-lg mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 print:hidden z-10"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-sky-950 border border-sky-800/30 flex items-center justify-center shrink-0">
+                        <Cable className="w-5.5 h-5.5 text-sky-400" />
+                      </div>
+                      <div className="text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3.5 h-3.5 rounded-full border border-slate-700 shrink-0" style={{ backgroundColor: currentProject.wires.find(w => w.id === selectedWireId)?.color }}></span>
+                          <h4 className="font-bold text-slate-200">Cabo Dupont Selecionado: {currentProject.wires.find(w => w.id === selectedWireId)?.sourceId.toUpperCase()} &rarr; {currentProject.wires.find(w => w.id === selectedWireId)?.destId.toUpperCase()}</h4>
+                        </div>
+                        {currentProject.wires.find(w => w.id === selectedWireId)?.label && (
+                          <p className="text-sky-400 font-semibold mt-1 font-mono text-[11px] bg-sky-950/40 border border-sky-900/30 px-1.5 py-0.5 rounded w-fit">
+                            Etiqueta: {currentProject.wires.find(w => w.id === selectedWireId)?.label}
+                          </p>
+                        )}
+                        {currentProject.wires.find(w => w.id === selectedWireId)?.notes && (
+                          <p className="text-slate-400 italic mt-1 pl-1 leading-normal">
+                            &ldquo;{currentProject.wires.find(w => w.id === selectedWireId)?.notes}&rdquo;
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => {
+                          // Trigger modal of source hole to edit details
+                          const w = currentProject.wires.find(w => w.id === selectedWireId);
+                          if (w) setSelectedHoleId(w.sourceId);
+                        }}
+                        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs font-semibold rounded-lg cursor-pointer transition-colors"
+                      >
+                        Editar Informações
+                      </button>
+                      <button
+                        onClick={() => onRemoveWire(selectedWireId)}
+                        className="px-3 py-1.5 bg-red-950 hover:bg-red-900/80 text-red-400 text-xs font-semibold rounded-lg cursor-pointer transition-colors"
+                      >
+                        Apagar Cabo
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Collapsible / Interactive Arduino Uno R3 Visualizer section */}
+              <div className="mt-6 z-10 print:hidden">
+                <ArduinoUnoVisualizer
+                  devices={currentProject.devices}
+                  onAddDevice={onAddDevice}
+                  onRemoveDevice={onRemoveDevice}
+                  onMapPin={onMapPin}
+                  selectedPin={selectedPin}
+                  setSelectedPin={setSelectedPin}
+                  selectedHoleId={selectedHoleId}
+                  onUpdatePinColor={onUpdatePinColor}
+                />
+              </div>
+            </>
+          )}
 
           {/* Real-time Telemetry Dashboard below the Breadboard Card */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 print:hidden z-10">
@@ -850,10 +900,10 @@ export default function App() {
           {sidebarOpen && (
             <motion.div 
               initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 440, opacity: 1 }}
+              animate={{ width: isMobile ? '100%' : 440, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 180 }}
-              className="w-full lg:w-[440px] bg-slate-950 border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col shrink-0 overflow-hidden print:hidden z-10 shadow-2xl relative"
+              className="w-full lg:w-[440px] bg-slate-950 border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col shrink-0 overflow-hidden print:hidden z-10 shadow-2xl relative lg:h-auto h-[60vh]"
             >
               {/* Sidebar Tab Selectors */}
               <div className="flex bg-slate-950 border-b border-slate-800/80 p-1 font-semibold text-xs shrink-0 z-10 sticky top-0 backdrop-blur-md">

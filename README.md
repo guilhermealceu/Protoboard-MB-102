@@ -85,7 +85,7 @@ Siga os passos abaixo para rodar o ambiente de desenvolvimento local do RuneBoar
 
 ## 📄 Licença
 
-Este software é um projeto proprietário concebido e refinado pela **Rune Projects**. Sinta-se à vontade para planejar, aprender e construir coisas incríveis com ele! Só não fale que é seu rsrs.
+Este software é um projeto proprietário concebido e refinado pela **Rune Projects**. Sinta-se à vontade para planejar, aprender e construir coisas incríveis com ele!
 
 ---
 

@@ -139,6 +139,27 @@ export const BreadboardSVG: React.FC<BreadboardSVGProps> = ({
     setIsDragging(false);
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const target = e.target as SVGElement;
+    if (target.tagName === 'svg' || target.id === 'board-body') {
+      setIsDragging(true);
+      const touch = e.touches[0];
+      dragStart.current = { x: touch.clientX - panX, y: touch.clientY - panY };
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (isDragging) {
+      const touch = e.touches[0];
+      setPanX(touch.clientX - dragStart.current.x);
+      setPanY(touch.clientY - dragStart.current.y);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
   // Find pin label mapping for any hole
   const getPinForHole = (holeId: string) => {
     for (const dev of devices) {
@@ -335,6 +356,9 @@ export const BreadboardSVG: React.FC<BreadboardSVGProps> = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         <svg
           width="100%"
