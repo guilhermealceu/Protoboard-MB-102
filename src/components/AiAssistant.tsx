@@ -90,7 +90,7 @@ export const AiAssistant: React.FC<AiAssistantProps> = ({
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userText }),
+        body: JSON.stringify({ message: userText, history: chatMessages.slice(-20) }),
       });
 
       if (!response.ok) {
@@ -104,7 +104,7 @@ export const AiAssistant: React.FC<AiAssistantProps> = ({
       console.error(err);
       setChatMessages(prev => [...prev, {
         sender: 'assistant',
-        text: `Desculpe, ocorreu um erro ao conectar com o mestre. Detalhes: ${err.message}. Certifique-se de configurar a sua chave do Gemini API nos Segredos.`
+        text: `Desculpe, ocorreu um erro ao conectar com o mestre. Detalhes: ${err.message}`
       }]);
     } finally {
       setIsSendingMessage(false);
