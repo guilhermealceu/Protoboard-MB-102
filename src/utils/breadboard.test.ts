@@ -30,6 +30,17 @@ describe('hole grouping', () => {
     expect(isGndNet('top-outer-left')).toBe(true);
     expect(isVccNet('top-outer-left')).toBe(false);
   });
+
+  it('bottom rails keep the same polarity on both halves (inner = +, outer = -)', () => {
+    for (const side of ['left', 'right']) {
+      expect(isVccNet(`bottom-inner-${side}`)).toBe(true);
+      expect(isGndNet(`bottom-inner-${side}`)).toBe(false);
+      expect(isGndNet(`bottom-outer-${side}`)).toBe(true);
+      expect(isVccNet(`bottom-outer-${side}`)).toBe(false);
+      expect(isVccNet(`top-inner-${side}`)).toBe(true);
+      expect(isGndNet(`top-outer-${side}`)).toBe(true);
+    }
+  });
 });
 
 describe('short circuit detection', () => {
