@@ -10,6 +10,11 @@ import { ProjectActions } from './components/ProjectActions';
 import { AiAssistant } from './components/AiAssistant';
 import { ArduinoUnoVisualizer } from './components/ArduinoUnoVisualizer';
 import { MobileCompactView } from './components/MobileCompactView';
+import { HeaderTools } from './components/HeaderTools';
+import { useProjects } from './hooks/useProjects';
+import { useIsMobile } from './hooks/useIsMobile';
+import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
+import { useSharedProjectFromHash } from './hooks/useSharedProjectFromHash';
 import { 
   Cpu, 
   Wrench, 
@@ -31,58 +36,22 @@ import {
   ClipboardList
 } from 'lucide-react';
 
-const LOCAL_STORAGE_KEY = 'mb102_breadboard_projects_v1';
-const ACTIVE_PROJECT_ID_KEY = 'mb102_breadboard_active_id_v1';
-
-// Initial dummy project to show off capabilities immediately!
-const DEFAULT_PROJECTS: Project[] = [
-  {
-    id: 'proj-default-1',
-    name: 'Termômetro DHT22 com Alerta KY-038',
-    description: 'Protótipo laboratorial de medição térmica com sensor DHT22, Arduino Uno e módulo de microfone KY-038 para detecção de pico de ruído.',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    devices: [
-      {
-        id: 'dev-uno',
-        name: 'Arduino Uno R3',
-        type: 'microcontroller',
-        color: '#00979C',
-        pins: [
-          { id: 'pin-uno-5v', name: '5V', type: 'power_vcc', holeId: 'top-inner-5' },
-          { id: 'pin-uno-gnd', name: 'GND 1', type: 'power_gnd', holeId: 'top-outer-5' },
-          { id: 'pin-uno-d2', name: 'D2', type: 'digital', holeId: 'a-10' },
-          { id: 'pin-uno-d3', name: 'D3 (~PWM)', type: 'digital', holeId: 'a-18' }
-        ],
-        notes: 'Microcontrolador central de controle.'
-      },
-      {
-        id: 'dev-dht',
-        name: 'Sensor DHT22',
-        type: 'sensor',
-        color: '#4A5568',
-        pins: [
-          { id: 'pin-dht-vcc', name: 'VDD (3-5V)', type: 'power_vcc', holeId: 'e-10' },
-          { id: 'pin-dht-data', name: 'DATA', type: 'digital', holeId: 'e-11' },
-          { id: 'pin-dht-nc', name: 'NC', type: 'other', holeId: null },
-          { id: 'pin-dht-gnd', name: 'GND', type: 'power_gnd', holeId: 'e-13' }
-        ],
-        notes: 'Sensor de temperatura e umidade.'
-      }
-    ],
-    wires: [
-      { id: 'w-1', sourceId: 'top-inner-5', destId: 'top-inner-10', color: '#EF4444', label: 'Energia VCC DHT22' },
-      { id: 'w-2', sourceId: 'top-outer-5', destId: 'top-outer-13', color: '#1A1A1A', label: 'GND DHT22' },
-      { id: 'w-3', sourceId: 'b-10', destId: 'd-10', color: '#3B82F6', label: 'Linha VCC Bridge' },
-      { id: 'w-4', sourceId: 'c-11', destId: 'b-10', color: '#F59E0B', label: 'Sinal de Dados D2' },
-      { id: 'w-5', sourceId: 'a-13', destId: 'top-outer-13', color: '#1A1A1A', label: 'GND Bridge' }
-    ]
-  }
-];
-
 export default function App() {
-  const [allProjects, setAllProjects] = useState<Project[]>([]);
-  const [currentProjectId, setCurrentProjectId] = useState<string>('');
+  const {
+    allProjects,
+    currentProjectId,
+    currentProject,
+    commitCurrent,
+    saveProject,
+    selectProject,
+    createProject,
+    importShared,
+    deleteProject,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useProjects();
 
   // UI Interactive States
   const [selectedHoleId, setSelectedHoleId] = useState<string | null>(null);
@@ -97,58 +66,13 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
 
   // Responsive / Mobile-friendly States
-  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const isMobile = useIsMobile();
   const [mobileViewType, setMobileViewType] = useState<'grafico' | 'simplificado'>('grafico');
-
-  // Detect mobile screen width on mount and resize
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   // States for Hole Modal Editing
   const [editWireLabel, setEditWireLabel] = useState<string>('');
   const [editWireNotes, setEditWireNotes] = useState<string>('');
   const [editingWireInModalId, setEditingWireInModalId] = useState<string | null>(null);
-
-  // Load all projects from LocalStorage
-  useEffect(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    const savedActiveId = localStorage.getItem(ACTIVE_PROJECT_ID_KEY);
-
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed && Array.isArray(parsed) && parsed.length > 0) {
-          setAllProjects(parsed);
-          const defaultId = parsed.find((p: any) => p.id === savedActiveId)?.id || parsed[0].id;
-          setCurrentProjectId(defaultId);
-          return;
-        }
-      } catch (err) {
-        console.error('Error parsing projects', err);
-      }
-    }
-
-    // Default Fallback
-    setAllProjects(DEFAULT_PROJECTS);
-    setCurrentProjectId(DEFAULT_PROJECTS[0].id);
-  }, []);
-
-  // Save projects to LocalStorage
-  const saveAllToStorage = (updatedProjects: Project[]) => {
-    setAllProjects(updatedProjects);
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedProjects));
-  };
-
-  const currentProject = useMemo(() => {
-    const proj = allProjects.find((p) => p.id === currentProjectId);
-    return proj || DEFAULT_PROJECTS[0];
-  }, [allProjects, currentProjectId]);
 
   // Compute connected components and diagnostics in real time!
   const diagnostics = useMemo(() => {
@@ -313,8 +237,7 @@ export default function App() {
       wires: updatedWires,
       updatedAt: new Date().toISOString(),
     };
-    const updatedAll = allProjects.map((p) => (p.id === currentProjectId ? updatedProject : p));
-    saveAllToStorage(updatedAll);
+    commitCurrent(updatedProject);
   };
 
   const onRemoveWire = (wireId: string) => {
@@ -324,8 +247,7 @@ export default function App() {
       wires: updatedWires,
       updatedAt: new Date().toISOString(),
     };
-    const updatedAll = allProjects.map((p) => (p.id === currentProjectId ? updatedProject : p));
-    saveAllToStorage(updatedAll);
+    commitCurrent(updatedProject);
     if (selectedWireId === wireId) setSelectedWireId(null);
   };
 
@@ -338,8 +260,7 @@ export default function App() {
       wires: updatedWires,
       updatedAt: new Date().toISOString(),
     };
-    const updatedAll = allProjects.map((p) => (p.id === currentProjectId ? updatedProject : p));
-    saveAllToStorage(updatedAll);
+    commitCurrent(updatedProject);
   };
 
   // AI Assistant auto wire callback
@@ -362,8 +283,7 @@ export default function App() {
       devices: updatedDevices,
       updatedAt: new Date().toISOString(),
     };
-    const updatedAll = allProjects.map((p) => (p.id === currentProjectId ? updatedProject : p));
-    saveAllToStorage(updatedAll);
+    commitCurrent(updatedProject);
   };
 
   const onRemoveDevice = (deviceId: string) => {
@@ -373,8 +293,7 @@ export default function App() {
       devices: updatedDevices,
       updatedAt: new Date().toISOString(),
     };
-    const updatedAll = allProjects.map((p) => (p.id === currentProjectId ? updatedProject : p));
-    saveAllToStorage(updatedAll);
+    commitCurrent(updatedProject);
   };
 
   const onMapPin = (deviceId: string, pinId: string, holeId: string | null) => {
@@ -398,8 +317,7 @@ export default function App() {
       devices: updatedDevices,
       updatedAt: new Date().toISOString(),
     };
-    const updatedAll = allProjects.map((p) => (p.id === currentProjectId ? updatedProject : p));
-    saveAllToStorage(updatedAll);
+    commitCurrent(updatedProject);
   };
 
   const onUpdatePinColor = (deviceId: string, pinId: string, color: string) => {
@@ -416,63 +334,49 @@ export default function App() {
       devices: updatedDevices,
       updatedAt: new Date().toISOString(),
     };
-    const updatedAll = allProjects.map((p) => (p.id === currentProjectId ? updatedProject : p));
-    saveAllToStorage(updatedAll);
+    commitCurrent(updatedProject);
   };
 
   // Project operations
-  const handleSaveProject = (proj: Project) => {
-    const exists = allProjects.some((p) => p.id === proj.id);
-    let updatedAll;
-    if (exists) {
-      updatedAll = allProjects.map((p) => (p.id === proj.id ? proj : p));
-    } else {
-      updatedAll = [...allProjects, proj];
-    }
-    saveAllToStorage(updatedAll);
-  };
+  const handleSaveProject = (proj: Project) => saveProject(proj);
 
-  const handleLoadProject = (projId: string) => {
-    setCurrentProjectId(projId);
-    localStorage.setItem(ACTIVE_PROJECT_ID_KEY, projId);
-    // Clear interactive states
+  const clearInteraction = () => {
     setSelectedHoleId(null);
     setSelectedWireId(null);
     setFirstHoleForWire(null);
     setSelectedPin(null);
   };
 
-  const handleCreateNewProject = (name: string, description: string) => {
-    const newProj: Project = {
-      id: `proj-${Date.now()}`,
-      name,
-      description,
-      wires: [],
-      devices: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    const updatedAll = [...allProjects, newProj];
-    saveAllToStorage(updatedAll);
-    setCurrentProjectId(newProj.id);
-    localStorage.setItem(ACTIVE_PROJECT_ID_KEY, newProj.id);
+  const handleLoadProject = (projId: string) => {
+    selectProject(projId);
+    clearInteraction();
   };
 
-  const handleDeleteProject = (projId: string) => {
-    const updatedAll = allProjects.filter((p) => p.id !== projId);
-    if (updatedAll.length === 0) return; // Prevent deleting last one
-    saveAllToStorage(updatedAll);
-    if (currentProjectId === projId) {
-      setCurrentProjectId(updatedAll[0].id);
-      localStorage.setItem(ACTIVE_PROJECT_ID_KEY, updatedAll[0].id);
-    }
+  const handleCreateNewProject = (name: string, description: string) => {
+    createProject(name, description);
   };
+
+  const handleDeleteProject = (projId: string) => deleteProject(projId);
+
+  const handleUndo = () => {
+    undo();
+    clearInteraction();
+  };
+  const handleRedo = () => {
+    redo();
+    clearInteraction();
+  };
+  useUndoRedoShortcuts(handleUndo, handleRedo);
+  useSharedProjectFromHash((shared) => {
+    importShared(shared);
+    clearInteraction();
+  });
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none print:bg-white print:text-black">
       
       {/* 1. BRAND HEADER (COMPACT PREMIUM CAD) */}
-      <header className="px-4 py-2 bg-slate-950 border-b border-slate-800/80 flex items-center justify-between gap-4 shrink-0 print:hidden z-20">
+      <header className="px-3 sm:px-4 py-2 bg-slate-950 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2 sm:gap-4 shrink-0 print:hidden z-20">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-[0_0_15px_rgba(99,102,241,0.2)] border border-indigo-400/20">
             <Cpu className="w-4.5 h-4.5 animate-pulse" />
@@ -496,7 +400,7 @@ export default function App() {
         </div>
 
         {/* Project Selector & Actions Toolbar */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2 w-full sm:w-auto">
           <ProjectActions
             currentProject={currentProject}
             onSaveProject={handleSaveProject}
@@ -504,6 +408,14 @@ export default function App() {
             onCreateNewProject={handleCreateNewProject}
             onDeleteProject={handleDeleteProject}
             allProjects={allProjects}
+          />
+
+          <HeaderTools
+            currentProject={currentProject}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
           />
           
           <div className="h-5 w-px bg-slate-800/80 mx-1 hidden sm:block" />

@@ -145,8 +145,8 @@ export function isVccNet(net: string): boolean {
     net.includes('vcc') ||
     net === 'top-inner-left' || 
     net === 'top-inner-right' || 
-    net === 'bottom-inner-left' || 
-    net === 'bottom-outer-right'
+    net === 'bottom-inner-left' ||
+    net === 'bottom-inner-right'
   );
 }
 
@@ -156,8 +156,8 @@ export function isGndNet(net: string): boolean {
     net.includes('gnd') ||
     net === 'top-outer-left' || 
     net === 'top-outer-right' || 
-    net === 'bottom-outer-left' || 
-    net === 'bottom-inner-right'
+    net === 'bottom-outer-left' ||
+    net === 'bottom-outer-right'
   );
 }
 
@@ -398,6 +398,7 @@ export const POPULAR_TEMPLATES: { [key: string]: DeviceTemplate } = {
     pins: [
       { name: '3V3', type: 'power_vcc' },
       { name: 'GND', type: 'power_gnd' },
+      { name: 'GND 2', type: 'power_gnd' },
       { name: 'EN', type: 'other' },
       { name: 'VP (GPIO36)', type: 'analog' },
       { name: 'VN (GPIO39)', type: 'analog' },
@@ -629,10 +630,57 @@ export const POPULAR_TEMPLATES: { [key: string]: DeviceTemplate } = {
     pins: [
       { name: 'AO (Analog Out)', type: 'analog' },
       { name: 'GND', type: 'power_gnd' },
-      { name: 'GND / +', type: 'power_vcc' }, // Sometimes named VCC/+
+      { name: '+ (VCC)', type: 'power_vcc' },
       { name: 'DO (Digital Out)', type: 'digital' },
     ],
     description: 'Módulo sensor de detecção de som com potenciômetro.',
+  },
+  lcd_16x2: {
+    name: 'Display LCD 16x2 (HD44780)',
+    type: 'display',
+    color: '#38A169',
+    pins: [
+      { name: 'VSS (GND)', type: 'power_gnd' },
+      { name: 'VDD (5V)', type: 'power_vcc' },
+      { name: 'V0 (Contraste)', type: 'analog' },
+      { name: 'RS', type: 'digital' },
+      { name: 'RW', type: 'digital' },
+      { name: 'E (Enable)', type: 'digital' },
+      { name: 'D0', type: 'digital' },
+      { name: 'D1', type: 'digital' },
+      { name: 'D2', type: 'digital' },
+      { name: 'D3', type: 'digital' },
+      { name: 'D4', type: 'digital' },
+      { name: 'D5', type: 'digital' },
+      { name: 'D6', type: 'digital' },
+      { name: 'D7', type: 'digital' },
+      { name: 'A (LED+)', type: 'power_vcc' },
+      { name: 'K (LED-)', type: 'power_gnd' },
+    ],
+    description: 'Display de caracteres 16x2 paralelo (16 pinos, controlador HD44780). Use resistor no LED e potenciômetro no V0.',
+  },
+  lcd_16x2_i2c: {
+    name: 'Display LCD 16x2 com Módulo I2C (PCF8574)',
+    type: 'display',
+    color: '#2F855A',
+    pins: [
+      { name: 'GND', type: 'power_gnd' },
+      { name: 'VCC (5V)', type: 'power_vcc' },
+      { name: 'SDA', type: 'digital' },
+      { name: 'SCL', type: 'digital' },
+    ],
+    description: 'LCD 16x2 com backpack I2C: apenas 4 fios (endereço comum 0x27 ou 0x3F).',
+  },
+  dht11_module: {
+    name: 'Módulo DHT11 (3 pinos)',
+    type: 'sensor',
+    color: '#3182CE',
+    pins: [
+      { name: 'S (DATA)', type: 'digital' },
+      { name: 'VCC (3.3-5V)', type: 'power_vcc' },
+      { name: 'GND (-)', type: 'power_gnd' },
+    ],
+    description: 'DHT11 em placa com resistor de pull-up embutido (ordem S, +, - pode variar por fabricante).',
   },
   resistor: {
     name: 'Resistor Comum',

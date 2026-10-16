@@ -90,3 +90,11 @@ Este software é um projeto proprietário concebido e refinado pela **Rune Proje
 ---
 
 *Criado com carinho por **Rune Projects** — Empoderando o aprendizado prático e a organização de hardware e eletrônica DIY.*
+
+## Novidades (v2)
+
+- **Desfazer/Refazer:** `Ctrl+Z` / `Ctrl+Y` (ou `Ctrl+Shift+Z`) e botões no topo, para componentes, pinos e fios.
+- **Compartilhar:** o botão de compartilhar gera um link com o projeto codificado na URL (`#p=...`). Quem abrir o link recebe uma cópia do projeto.
+- **Temas:** Escuro, Claro e HUD, com troca pelo botão no topo. A escolha fica salva no navegador.
+- **Novos componentes:** LCD 16x2 (paralelo e I2C) e módulo DHT11 de 3 pinos. O ESP32 30 pinos agora tem os 2 GNDs.
+- **Correção:** os trilhos de baixo da metade direita estavam com VCC/GND invertidos no detector de curto.
