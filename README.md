@@ -83,9 +83,14 @@ Siga os passos abaixo para rodar o ambiente de desenvolvimento local do RuneBoar
 
 ---
 
-## 📄 Licença
+## 📜 Licença e créditos
 
-Este software é um projeto proprietário concebido e refinado pela **Rune Projects**. Sinta-se à vontade para planejar, aprender e construir coisas incríveis com ele!
+Distribuído sob a **[Apache License 2.0](LICENSE)**. Você pode usar, estudar, modificar e redistribuir,
+inclusive em projetos comerciais, **desde que dê os devidos créditos**:
+
+- mantenha os avisos de copyright e o arquivo [`NOTICE`](NOTICE) em cópias e versões modificadas;
+- indique de forma clara o que você alterou;
+- credite o autor original: **Guilherme Dill / RUNE Projects** — https://github.com/guilhermealceu/Protoboard-MB-102
 
 ---
 
